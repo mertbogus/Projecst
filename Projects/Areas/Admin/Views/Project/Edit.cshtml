@@ -1,0 +1,266 @@
+﻿@using Projects.Models
+@model ProjectNewListModel
+@{
+    var sectionsss = ViewBag.Sections as List<SectionModel>;
+    var sectiondetails = ViewBag.SectionDetails as List<SectionDetailModel>;
+}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<div class="card">
+    <div class="card-body">
+
+        <div class="container mt-5">
+            <h2>Proje Düzenle</h2>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSectionModal">
+                Bölüm Ekle
+            </button>
+            <form asp-action="Edit" method="post" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label for="Name">Proje Adı</label>
+                    <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" required />
+                    <div class="invalid-feedback">Lütfen proje adını giriniz.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="Desc">Açıklama</label>
+                    <textarea class="form-control" id="Desc" name="Desc" required>@Model.Desc</textarea>
+                    <div class="invalid-feedback">Lütfen bir açıklama giriniz.</div>
+                </div>
+                <div class="form-group">
+                    <label for="CategoryId">Kategori</label>
+                    <select class="form-control" id="CategoryId" name="CategoryId" required>
+                        <option value="">Kategori Seçin</option>
+                        @foreach (var category in ViewBag.Categories as List<SelectListItem>)
+                        {
+                            @if (Model.CategoryId == Convert.ToInt32(category.Value))
+                            {
+                                <option value="@category.Value" selected>@category.Text</option>
+
+                            }
+                            else
+                            {
+
+                                <option value="@category.Value">@category.Text</option>
+                            }
+                        }
+                    </select>
+                    <div class="invalid-feedback">Lütfen bir kategori seçiniz.</div>
+                </div>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="OnlyLogin" name="OnlyLogin" value="true" @(Model.OnlyLogin ? "checked" : "") />
+                    <label class="form-check-label" for="OnlyLogin">Sadece Giriş Yapmış Kullanıcılar</label>
+                </div>
+
+
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+                <a href="/Projects" class="btn btn-secondary">İptal</a>
+
+            </form>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <div class="container mt-5">
+            <div class="container mt-5">
+                <h3 class="mt-4">Bölümler</h3>
+                <div class="accordion" id="sectionsAccordion">
+                    @foreach (var item in sectionsss)
+                    {
+                        var details = sectiondetails?.Where(d => d.SectionId == item.Id)
+                        .OrderBy(d => d.OrderNumber)
+                        .ToList();
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading-@item.Id">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@item.Id" aria-expanded="true" aria-controls="collapse-@item.Id">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <div>
+                                            <strong>@item.Name</strong><br />
+                                            <small>@item.Desc</small>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">@item.OrderNumber</span>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse-@item.Id" class="accordion-collapse collapse" aria-labelledby="heading-@item.Id" data-bs-parent="#sectionsAccordion">
+                                <div class="accordion-body">
+                                    @if (details != null && details.Any())
+                                    {
+                                        <ul class="list-group">
+                                            @foreach (var detail in details)
+                                            {
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>@detail.Name</strong><br />
+                                                        <small>@detail.Desc</small>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="badge bg-secondary rounded-pill">@detail.OrderNumber</span>
+                                                        <button class="btn btn-sm btn-secondary ms-2 edit-detail-button" data-id="@detail.Id" data-bs-toggle="modal" data-bs-target="#editDetailModal">
+                                                            <i class="bi bi-pencil"></i> <!-- Düzenleme ikonu -->
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger ms-2 delete-detail-button" data-id="@detail.Id">
+                                                            <i class="bi bi-trash"></i> <!-- Silme ikonu -->
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            }
+
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <p>Bu bölüm için detay bulunmamaktadır.</p>
+                                    }
+                                    <div class="mt-3">
+                                        <button class="btn btn-sm btn-secondary me-2 edit-button" data-id="@item.Id">
+                                            <i class="bi bi-pencil"></i> <!-- Düzenleme ikonu -->
+                                        </button>
+                                        <button class="btn btn-sm btn-danger delete-buttonsection" data-id="@item.Id">
+                                            <i class="bi bi-trash"></i> <!-- Silme ikonu -->
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-detail-button" data-id="@item.Id" data-bs-toggle="modal" data-bs-target="#addDetailModal">
+                                            <i class="bi bi-plus-circle"></i> Detay Ekle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addDetailModal" tabindex="-1" aria-labelledby="addDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDetailModalLabel">Bölüm Detayı Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDetailForm">
+                    <div class="mb-3">
+                        <label for="sectionName" class="form-label">Ad</label>
+                        <input type="text" class="form-control" id="sectionName" name="Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sectionDesc" class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="sectionDesc" name="Desc" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sectionOrderNumber" class="form-label">Sıra Numarası</label>
+                        <input type="number" class="form-control" id="sectionOrderNumber" name="OrderNumber" required>
+                    </div>
+                    <input type="hidden" id="sectionId" name="SectionId">
+                    <button type="submit" class="btn btn-primary">Ekle</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Bölümü Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" name="Id" id="sectionId1">
+                    <input type="hidden" class="form-control" id="projectNewId1" name="ProjectNewId" required />
+
+                    <div class="mb-3">
+                        <label for="sectionName" class="form-label">Bölüm Adı</label>
+                        <input type="text" class="form-control" id="sectionName1" name="Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sectionDesc" class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="sectionDesc1" name="Desc" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sectionOrder" class="form-label">Sıra Numarası</label>
+                        <input type="number" class="form-control" id="sectionOrder1" name="OrderNumber" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="editDetailModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Bölümü Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editFormDetail">
+                    <input type="hidden" name="Id" id="sectionIdDetail">
+                    <input type="hidden" name="SectionId" id="DetailsectionId">
+
+                    <div class="mb-3">
+                        <label for="sectionName" class="form-label">Bölüm Adı</label>
+                        <input type="text" class="form-control" id="sectionDetailName" name="Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sectionDesc" class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="sectionDetailDesc" name="Desc" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sectionOrder" class="form-label">Sıra Numarası</label>
+                        <input type="number" class="form-control" id="sectionDetailOrder" name="OrderNumber" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSectionModalLabel">Bölüm Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSectionForm">
+                    @Html.AntiForgeryToken()
+                    <div class="form-group">
+                        <label for="SectionName">Bölüm Sıra No</label>
+                        <input type="text" class="form-control" id="OrderNumber" name="OrderNumber" required />
+                        <div class="invalid-feedback">Lütfen order number kontrol  ediniz.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="SectionName">Bölüm Adı</label>
+                        <input type="text" class="form-control" id="SectionName" name="Name" required />
+                        <div class="invalid-feedback">Lütfen bölüm adını giriniz.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="SectionDesc">Açıklama</label>
+                        <textarea class="form-control" id="SectionDesc" name="Desc" required></textarea>
+                        <div class="invalid-feedback">Lütfen bir açıklama giriniz.</div>
+                    </div>
+                    <input type="hidden" id="ProjectNewId" name="ProjectNewId" value="@Model.Id" />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="saveSectionButton">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/edit.js"></script>

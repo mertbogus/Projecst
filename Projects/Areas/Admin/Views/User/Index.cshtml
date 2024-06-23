@@ -1,0 +1,58 @@
+﻿@model Projects.Models.UserViewModel
+
+@{
+    ViewData["Title"] = "Kullanıcı Listesi";
+    var userRoles = ViewBag.UserRoles as Dictionary<int, List<string>>;
+}
+
+<h1>Kullanıcı Listesi</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Yeni Kullanıcı Ekle</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Kullanıcı Adı</th>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>E-posta</th>
+            <th>Roller</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.UserName</td>
+                <td>@user.Name</td>
+                <td>@user.Surname</td>
+                <td>@user.Email</td>
+                <td>
+                    @if (userRoles != null && userRoles.ContainsKey(user.Id))
+                    {
+                        @foreach (var role in userRoles[user.Id])
+                        {
+                            <span>@role</span>
+                        }
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-secondary">Düzenle</a>
+                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-danger" onclick="return confirm('Silmek istediğinize emin misiniz?');">Sil</a>
+                    <a asp-action="Roles" asp-route-id="@user.Id" class="btn btn-info">Roller</a>
+                    @if (userRoles != null && userRoles.ContainsKey(user.Id) && !userRoles[user.Id].Contains("Admin"))
+                    {
+                        <a asp-action="MakeAdmin" asp-route-id="@user.Id" class="btn btn-warning" onclick="return confirm('Bu kullanıcıyı Admin yapmak istediğinize emin misiniz?');">Admin Yap</a>
+                    }
+                    else
+                    {
+                        <a asp-action="RemoveAdmin" asp-route-id="@user.Id" class="btn btn-danger" onclick="return confirm('Bu kullanıcının Admin yetkisini kaldırmak istediğinize emin misiniz?');">Adminliği Kaldır</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

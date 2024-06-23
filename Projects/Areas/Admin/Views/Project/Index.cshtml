@@ -1,0 +1,75 @@
+﻿@using Projects.Models
+@model List<ProjectNewListModel>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="card mt-5">
+    <div class="card-header">
+        <h2 class="card-title">Proje Listesi</h2>
+        <div class="text-end">
+            <a href="/Admin/Project/Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Yeni Ekle
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Ad</th>
+                        <th>Açıklama</th>
+                        <th>Tip</th>
+                        <th>Aksiyonlar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var project in Model)
+                    {
+                        <tr>
+                            <td>@project.Id</td>
+                            <td>@project.Name</td>
+                            <td>@project.Desc</td>
+                            <td>@(project.OnlyLogin ? "Sadece Giriş Yapanlar" : "Herkes")</td>
+                            <td>
+                                <a href="/Admin/Project/Edit/@project.Id" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i> Düzenle
+                                </a>
+                                <form asp-action="DeleteConfirmed" asp-area="ADmin" asp-controller="Project" method="post" class="d-inline" data-id="@project.Id" onsubmit="return confirmDelete(event);">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@project.Id" />
+                                    <button type="submit" class="btn btn-sm btn-danger ms-2">
+                                        <i class="bi bi-trash"></i> Sil
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    function confirmDelete(event) {
+        event.preventDefault();
+        const form = event.target;
+        const projectId = form.getAttribute('data-id');
+
+        Swal.fire({
+            title: 'Emin misiniz?',
+            text: `Proje ID: ${projectId} silinecek!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, sil!',
+            cancelButtonText: 'Hayır, iptal et!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    }
+</script>

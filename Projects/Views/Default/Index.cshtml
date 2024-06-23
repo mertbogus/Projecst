@@ -1,0 +1,47 @@
+﻿@model List<ProjectNewListModel>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_UILayout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+@await Html.PartialAsync("/Views/LayoutPartial/_HeadPartial.cshtml")
+
+<body class="landing-page">
+    @await Html.PartialAsync("~/Views/LayoutPartial/_HeaderPartial.cshtml")
+	<!-- GITHUB BUTTON JS -->
+     <div class="container mt-5">
+        <div class="row">
+            @foreach (var project in Model)
+            {
+                if (project.OnlyLogin && !User.Identity.IsAuthenticated)
+                {
+                    // Giriş yapmamış kullanıcılar için gizli olan projeleri atla
+                    continue;
+                }
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">@project.Name</h5>
+                            <p class="card-text">@project.Desc</p>
+                            <a asp-action="DetailProject" asp-route-id="@project.Id" class="btn btn-primary">Learn more</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+     
+    <!--FACEBOOK LIKE BUTTON JAVASCRIPT SDK-->
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v6.0&appId=994736563909741&autoLogAppEvents=1"></script>
+    @await Component.InvokeAsync("_CardProjects")
+    @await Html.PartialAsync("/Views/LayoutPartial/_FooterPartial.cshtml")
+    @await Html.PartialAsync("/Views/LayoutPartial/_ScriptsPartial.cshtml")
+</body>
+</html> 
+
+
+
